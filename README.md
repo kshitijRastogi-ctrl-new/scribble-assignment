@@ -47,9 +47,9 @@ You should be comfortable with TypeScript, React components and hooks, REST APIs
 
 ## Repository Workflow
 
-Clone the starter repository locally and work directly in it. Commit Spec Kit artifacts and implementation changes as you progress, then submit the completed work through the platform.
+Starter repository: `https://github.com/everest-engineering/scribble-assignment`
 
-Replace `<GITHUB_STARTER_REPO_LINK>` with the actual repository URL before publishing this module.
+Clone the starter repository locally and work directly in it. Commit Spec Kit artifacts and implementation changes as you progress, then submit the completed work through the platform.
 
 ## Learning Objectives
 
