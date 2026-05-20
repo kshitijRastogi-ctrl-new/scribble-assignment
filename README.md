@@ -206,7 +206,6 @@ Complete a minimum of 4 specify iterations.
 These should stay out of the implementation:
 
 - WebSockets or real-time sync
-- live drawing stroke broadcast (drawing is stored and synced via polling, not pushed in real time)
 - databases or persistent storage
 - authentication, accounts, or sessions
 - deployment, hosting, CI, or Docker work
