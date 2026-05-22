@@ -109,10 +109,7 @@ function formatEvidenceItem(item) {
 }
 
 function statusFromChecks(checks) {
-  if (checks.some((check) => check.status === "fail")) return "fail";
-  if (checks.some((check) => check.status === "partial")) return "partial";
-  if (checks.some((check) => check.status === "warning")) return "warning";
-  return "pass";
+  return checks.some((check) => check.status === "fail" || check.status === "error") ? "fail" : "pass";
 }
 
 function getPackageJson(projectDir) {
@@ -204,9 +201,9 @@ function artifactInventory() {
       }
     : { path: "reflection.md or REFLECTION.md", exists: false, characters: 0 };
 
-  const warnings = [];
+  const notes = [];
   if (constitution.exists && constitution.characters < 800) {
-    warnings.push(`${constitution.path} is short (${constitution.characters} chars < 800).`);
+    notes.push(`${constitution.path} is short (${constitution.characters} chars < 800).`);
   }
 
   for (const feature of features) {
@@ -217,13 +214,13 @@ function artifactInventory() {
           ? 900
           : 500;
       if (file.exists && file.characters < threshold) {
-        warnings.push(`${file.path} is short (${file.characters} chars < ${threshold}).`);
+        notes.push(`${file.path} is short (${file.characters} chars < ${threshold}).`);
       }
     }
   }
 
   if (reflection.exists && reflection.characters < 500) {
-    warnings.push(`${reflection.path} is short (${reflection.characters} chars < 500).`);
+    notes.push(`${reflection.path} is short (${reflection.characters} chars < 500).`);
   }
 
   const failures = [];
@@ -235,13 +232,13 @@ function artifactInventory() {
   if (!reflection.exists) failures.push("Missing root reflection.md or REFLECTION.md.");
 
   return {
-    status: failures.length > 0 ? "fail" : warnings.length > 0 ? "warning" : "pass",
+    status: failures.length > 0 ? "fail" : "pass",
     constitution,
     featureCount: features.length,
     completeFeatureCount: features.filter((feature) => feature.complete).length,
     features,
     reflection,
-    warnings,
+    notes,
     failures,
   };
 }
@@ -306,7 +303,7 @@ function forbiddenTechnologyScan() {
   const lockFiles = ["backend/package-lock.json", "frontend/package-lock.json"]
     .map((file) => path.join(root, file))
     .filter(existsSync);
-  const lockfileWarnings = firstLineMatches(lockFiles, forbiddenPatterns, 20);
+  const lockfileNotes = firstLineMatches(lockFiles, forbiddenPatterns, 20);
 
   const failures = [];
   if (implementationMatches.length > 0) {
@@ -317,10 +314,10 @@ function forbiddenTechnologyScan() {
   }
 
   return {
-    status: failures.length > 0 ? "fail" : lockfileWarnings.length > 0 ? "warning" : "pass",
+    status: failures.length > 0 ? "fail" : "pass",
     implementationMatches,
     directDependencyMatches,
-    lockfileWarnings,
+    lockfileNotes,
     failures,
   };
 }
@@ -448,12 +445,7 @@ function scenarioCoverageHeuristic() {
       }));
       const artifactEvidence = firstLineMatches(artifactFiles, artifactPatterns, 3);
       const codeEvidence = firstLineMatches(codeFiles, codePatterns, 3);
-      const status =
-        artifactEvidence.length > 0 && codeEvidence.length > 0
-          ? "pass"
-          : artifactEvidence.length > 0 || codeEvidence.length > 0
-            ? "partial"
-            : "fail";
+      const status = artifactEvidence.length > 0 && codeEvidence.length > 0 ? "pass" : "fail";
 
       return {
         name: concept.name,
@@ -484,7 +476,7 @@ function buildTestSummary() {
       commands.push({
         project,
         command: "npm run build",
-        status: "skip",
+        status: "fail",
         reason: `${project}/package.json not found.`,
       });
       continue;
@@ -496,7 +488,7 @@ function buildTestSummary() {
       commands.push({
         project,
         command: "npm run build",
-        status: "skip",
+        status: "fail",
         reason: "No build script found.",
       });
     }
@@ -507,7 +499,7 @@ function buildTestSummary() {
       commands.push({
         project,
         command: "npm test",
-        status: "skip",
+        status: "pass",
         reason: "No test script found.",
       });
     }
@@ -520,7 +512,7 @@ function buildTestSummary() {
   const failed = commands.filter((command) => command.status === "fail" || command.status === "error");
 
   return {
-    status: failed.length > 0 ? "warning" : "pass",
+    status: failed.length > 0 ? "fail" : "pass",
     commands,
   };
 }
@@ -531,9 +523,9 @@ function markdownTable(rows) {
 
 function formatStatus(status) {
   const mapping = {
-    blocked: "🛑 Blocked: Action Required",
-    ready_for_ai_review: "✅ Ready for AI Review",
-    warning: "⚠️ Warning",
+    pass: "PASS",
+    fail: "FAIL",
+    error: "FAIL",
   };
   return mapping[status] || status;
 }
@@ -556,14 +548,14 @@ function renderArtifactMarkdown(inventory) {
     );
   }
 
-  const warnings = inventory.warnings.length > 0
-    ? `\n\nSize warnings:\n${inventory.warnings.map((warning) => `- ${warning}`).join("\n")}`
+  const notes = inventory.notes.length > 0
+    ? `\n\nSize notes:\n${inventory.notes.map((note) => `- ${note}`).join("\n")}`
     : "";
   const failures = inventory.failures.length > 0
     ? `\n\nFailures:\n${inventory.failures.map((failure) => `- ${failure}`).join("\n")}`
     : "";
 
-  return `${markdownTable(rows)}${warnings}${failures}`;
+  return `${markdownTable(rows)}${notes}${failures}`;
 }
 
 function renderForbiddenMarkdown(scan) {
@@ -583,12 +575,12 @@ function renderForbiddenMarkdown(scan) {
     );
   }
 
-  if (scan.lockfileWarnings.length > 0) {
-    lines.push("\nLockfile-only warnings:");
-    lines.push(...scan.lockfileWarnings.map((match) => `- ${match.pattern}: \`${formatEvidenceItem(match)}\``));
+  if (scan.lockfileNotes.length > 0) {
+    lines.push("\nLockfile-only notes:");
+    lines.push(...scan.lockfileNotes.map((match) => `- ${match.pattern}: \`${formatEvidenceItem(match)}\``));
   }
 
-  if (scan.implementationMatches.length === 0 && scan.directDependencyMatches.length === 0 && scan.lockfileWarnings.length === 0) {
+  if (scan.implementationMatches.length === 0 && scan.directDependencyMatches.length === 0 && scan.lockfileNotes.length === 0) {
     lines.push("\nNo forbidden technology patterns found.");
   }
 
@@ -643,32 +635,40 @@ const forbidden = forbiddenTechnologyScan();
 const coverage = scenarioCoverageHeuristic();
 const buildSummary = buildTestSummary();
 
-const hardBlockers = [
+const buildFailures = buildSummary.commands
+  .filter((command) => command.status === "fail" || command.status === "error")
+  .map((command) => command.reason
+    ? `Build/test: ${command.project} \`${command.command}\` failed: ${command.reason}`
+    : `Build/test: ${command.project} \`${command.command}\` failed with exit ${command.exitCode ?? "error"}.`);
+
+const failureReasons = [
   ...inventory.failures.map((failure) => `Artifact inventory: ${failure}`),
   ...forbidden.failures.map((failure) => `Forbidden technology: ${failure}`),
+  ...(coverage.status === "fail" ? ["Scenario coverage: Required scenario evidence was not found in both artifacts and code."] : []),
+  ...buildFailures,
 ];
 
 const report = {
   generatedAt: new Date().toISOString(),
-  status: hardBlockers.length > 0 ? "blocked" : "ready_for_ai_review",
-  hardBlockers,
+  status: failureReasons.length > 0 ? "fail" : "pass",
+  failureReasons,
   artifactInventory: inventory,
   forbiddenTechnologyScan: forbidden,
   scenarioCoverageHeuristic: coverage,
   buildTestSummary: buildSummary,
 };
 
-const markdown = `# AI Pre-Evaluation Check
+const markdown = `# Pre-Evaluation Check
 
 Generated: ${report.generatedAt}
 
 Overall status: **${formatStatus(report.status)}**
 
-This report is automated evidence for AI review. It is not the final evaluation score. The AI reviewer should read this first, then verify independently against the repository.
+This report is automated evidence for review. It is not the final evaluation score. Reviewers should verify findings independently against the repository.
 
-## Hard Blockers
+## Failure Reasons
 
-${hardBlockers.length > 0 ? hardBlockers.map((blocker) => `- ${blocker}`).join("\n") : "- None"}
+${failureReasons.length > 0 ? failureReasons.map((reason) => `- ${reason}`).join("\n") : "- None"}
 
 ## Artifact Inventory
 
@@ -690,13 +690,13 @@ Status: ${formatStatus(buildSummary.status)}
 
 ${renderBuildMarkdown(buildSummary)}
 
-## AI Reviewer Instruction
+## Reviewer Notes
 
 Use this report as a starting evidence bundle only. Verify each finding by reading the referenced files, then apply the official evaluation prompt and rubric.
 `;
 
-writeFileSync(path.join(outputDir, "ai-precheck-report.json"), `${JSON.stringify(report, null, 2)}\n`);
-writeFileSync(path.join(outputDir, "ai-precheck-report.md"), markdown);
+writeFileSync(path.join(outputDir, "precheck-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+writeFileSync(path.join(outputDir, "precheck-report.md"), markdown);
 
 console.log(markdown);
-process.exitCode = hardBlockers.length > 0 ? 1 : 0;
+process.exitCode = failureReasons.length > 0 ? 1 : 0;
