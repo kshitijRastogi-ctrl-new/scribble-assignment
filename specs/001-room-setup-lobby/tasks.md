@@ -58,11 +58,11 @@ description: "Task list for Room Setup & Lobby — Scenario 1"
 
 **Independent Test**: Attempt join with empty name → 400. Attempt join with missing room code → 400. Attempt join unknown code → 404. Create room as Alice, attempt join as Alice → 409.
 
-- [ ] T009 [US3] Update `joinRoom` in `backend/src/services/roomStore.ts` — (1) return string discriminant `"emptyCode"` if `code.trim()` is empty before the Map lookup; (2) return `"duplicateName"` if `room.participants.some(p => p.name === trimmedName)` after trim; (3) call `createParticipant(playerName, false)` (isHost false for all joiners) — FR-004, FR-014 — depends: T005
+- [x] T009 [US3] Update `joinRoom` in `backend/src/services/roomStore.ts` — (1) return string discriminant `"emptyCode"` if `code.trim()` is empty before the Map lookup; (2) return `"duplicateName"` if `room.participants.some(p => p.name === trimmedName)` after trim; (3) call `createParticipant(playerName, false)` (isHost false for all joiners) — FR-004, FR-014 — depends: T005
 
-- [ ] T010 [US2] Update `POST /rooms/:code/join` handler in `backend/src/api/rooms.ts` — before calling `joinRoom`, check `code.trim() === ""` and throw `HttpError(400, "Room code cannot be empty")`; after `joinRoom` returns, map `"duplicateName"` discriminant → `HttpError(409, "Name already taken in this room")`; map `null` → `HttpError(404, "Room not found")` — FR-004, FR-013, FR-014 — depends: T004, T009
+- [x] T010 [US2] Update `POST /rooms/:code/join` handler in `backend/src/api/rooms.ts` — before calling `joinRoom`, check `code.trim() === ""` and throw `HttpError(400, "Room code cannot be empty")`; after `joinRoom` returns, map `"duplicateName"` discriminant → `HttpError(409, "Name already taken in this room")`; map `null` → `HttpError(404, "Room not found")` — FR-004, FR-013, FR-014 — depends: T004, T009
 
-- [ ] T011 [US3] Fix `GET /rooms/:code` error message in `backend/src/api/rooms.ts` — change `"Unable to load room"` to `"Room not found"` in the HttpError throw — FR-004 — depends: T004
+- [x] T011 [US3] Fix `GET /rooms/:code` error message in `backend/src/api/rooms.ts` — change `"Unable to load room"` to `"Room not found"` in the HttpError throw — FR-004 — depends: T004
 
 **Checkpoint**: `POST /rooms/:code/join` with empty code → 400. With unknown code → 404. With duplicate name → 409. All error bodies use `{ "error": "..." }`.
 

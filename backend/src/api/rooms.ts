@@ -30,12 +30,29 @@ export function createRoomsRouter() {
 
   router.post("/:code/join", (request, response, next) => {
     try {
-      const { code } = roomCodeParamsSchema.parse(request.params);
-      const { playerName } = joinRoomSchema.parse(request.body);
-      const result = joinRoom(code.toUpperCase(), playerName);
+      const parsedCode = roomCodeParamsSchema.safeParse(request.params);
+      if (!parsedCode.success) {
+        return next(new HttpError(400, "Room code cannot be empty"));
+      }
 
-      if (!result) {
-        throw new HttpError(404, "Unable to join room");
+      const parsedBody = joinRoomSchema.safeParse(request.body);
+      if (!parsedBody.success) {
+        return next(new HttpError(400, parsedBody.error.issues[0]?.message ?? "Invalid request payload"));
+      }
+
+      const code = parsedCode.data.code.toUpperCase();
+      const { playerName } = parsedBody.data;
+
+      const result = joinRoom(code, playerName);
+
+      if (result === "emptyCode") {
+        return next(new HttpError(400, "Room code cannot be empty"));
+      }
+      if (result === "duplicateName") {
+        return next(new HttpError(409, "Name already taken in this room"));
+      }
+      if (result === null) {
+        return next(new HttpError(404, "Room not found"));
       }
 
       response.json({
@@ -54,7 +71,7 @@ export function createRoomsRouter() {
       const room = getRoom(code.toUpperCase());
 
       if (!room) {
-        throw new HttpError(404, "Unable to load room");
+        throw new HttpError(404, "Room not found");
       }
 
       response.json({

@@ -66,14 +66,22 @@ export function createRoom(playerName: string) {
   };
 }
 
-export function joinRoom(code: string, playerName?: string) {
+export function joinRoom(code: string, playerName: string) {
+  if (code.trim() === "") {
+    return "emptyCode" as const;
+  }
+
   const room = rooms.get(code);
 
   if (!room) {
     return null;
   }
 
-  const participant = createParticipant(playerName);
+  if (room.participants.some((p) => p.name === playerName)) {
+    return "duplicateName" as const;
+  }
+
+  const participant = createParticipant(playerName, false);
   room.participants.push(participant);
   room.updatedAt = now();
   rooms.set(room.code, room);
