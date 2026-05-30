@@ -28,7 +28,7 @@ description: "Task list for Room Setup & Lobby — Scenario 1"
 
 - [x] T003 [P] Add `startGameSchema` to `backend/src/api/schemas.ts` — `z.object({ playerName: z.string().trim().min(1) })` — export it alongside existing schemas — FR-011, FR-012 — depends: none
 
-- [ ] T004 [P] Update `errorHandler` in `backend/src/api/router.ts` — change all response bodies from `{ message: ... }` to `{ error: ... }`, including the Zod branch which must return `{ error: "Invalid request payload" }` — FR-003, FR-004, FR-012, FR-013 — depends: none
+- [x] T004 [P] Update `errorHandler` in `backend/src/api/router.ts` — change all response bodies from `{ message: ... }` to `{ error: ... }`, including the Zod branch which must return `{ error: "Invalid request payload" }` — FR-003, FR-004, FR-012, FR-013 — depends: none
 
 **Checkpoint**: Types compile, schemas reject empty strings, error responses use `error` key.
 
@@ -40,13 +40,13 @@ description: "Task list for Room Setup & Lobby — Scenario 1"
 
 **Independent Test**: Call `POST /rooms` with `{ "playerName": "Alice" }`, then `GET /rooms/:code` — response must contain `host: "Alice"` and `participants[0].isHost: true`.
 
-- [ ] T005 [US1] Update `createParticipant` in `backend/src/services/roomStore.ts` — add `isHost: boolean` parameter, add `score: 0` to returned object, remove the `displayName()` fallback helper and its call (name is now guaranteed non-empty by Zod) — FR-001 — depends: T001
+- [x] T005 [US1] Update `createParticipant` in `backend/src/services/roomStore.ts` — add `isHost: boolean` parameter, add `score: 0` to returned object, remove the `displayName()` fallback helper and its call (name is now guaranteed non-empty by Zod) — FR-001 — depends: T001
 
-- [ ] T006 [US1] Update `createRoom` in `backend/src/services/roomStore.ts` — call `createParticipant(playerName, true)`, set `room.host = playerName` on the new room object — FR-001 — depends: T005
+- [x] T006 [US1] Update `createRoom` in `backend/src/services/roomStore.ts` — call `createParticipant(playerName, true)`, set `room.host = playerName` on the new room object — FR-001 — depends: T005
 
-- [ ] T007 [US1] Update `toRoomSnapshot` in `backend/src/services/roomStore.ts` — add `host: room.host` to the returned snapshot object so every GET response includes the host name — FR-002 — depends: T001, T006
+- [x] T007 [US1] Update `toRoomSnapshot` in `backend/src/services/roomStore.ts` — add `host: room.host` to the returned snapshot object so every GET response includes the host name — FR-002 — depends: T001, T006
 
-- [ ] T008 [US1] Verify `POST /rooms` handler in `backend/src/api/rooms.ts` — the Zod parse failure now produces `{ error: "Name cannot be empty" }` via T004's updated errorHandler; confirm no extra error-wrapping logic is needed in the route handler itself — FR-003 — depends: T002, T004, T006
+- [x] T008 [US1] Verify `POST /rooms` handler in `backend/src/api/rooms.ts` — the Zod parse failure now produces `{ error: "Name cannot be empty" }` via T004's updated errorHandler; confirm no extra error-wrapping logic is needed in the route handler itself — FR-003 — depends: T002, T004, T006
 
 **Checkpoint**: `POST /rooms { "playerName": "Alice" }` → 201 with `host: "Alice"`, `participants[0].isHost: true`, `participants[0].score: 0`. `POST /rooms {}` → 400 `{ "error": "Name cannot be empty" }`.
 

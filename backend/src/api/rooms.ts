@@ -13,8 +13,11 @@ export function createRoomsRouter() {
 
   router.post("/", (request, response, next) => {
     try {
-      const { playerName } = createRoomSchema.parse(request.body);
-      const result = createRoom(playerName);
+      const parsed = createRoomSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return next(new HttpError(400, parsed.error.issues[0]?.message ?? "Invalid request payload"));
+      }
+      const result = createRoom(parsed.data.playerName);
 
       response.status(201).json({
         participantId: result.participantId,
