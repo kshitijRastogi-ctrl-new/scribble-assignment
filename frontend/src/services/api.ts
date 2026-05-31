@@ -1,17 +1,19 @@
-export type ParticipantRole = "drawer" | "guesser";
-
 export interface Participant {
   id: string;
   name: string;
+  isHost: boolean;
+  score: number;
   joinedAt: string;
+  role: string;
 }
 
 export interface RoomSnapshot {
   code: string;
-  status: "lobby";
+  host: string;
+  status: "lobby" | "playing" | "result";
   participants: Participant[];
   availableWords: string[];
-  roles: ParticipantRole[];
+  secretWord?: string;
 }
 
 export interface RoomSessionResponse {
@@ -19,7 +21,7 @@ export interface RoomSessionResponse {
   room: RoomSnapshot;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001/bug";
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 
 async function request<T>(path: string, init?: RequestInit) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -31,11 +33,11 @@ async function request<T>(path: string, init?: RequestInit) {
   });
 
   if (!response.ok) {
-    const errorBody = (await response.json().catch(() => ({ message: "Request failed" }))) as {
-      message?: string;
+    const errorBody = (await response.json().catch(() => ({ error: "Request failed" }))) as {
+      error?: string;
     };
 
-    throw new Error(errorBody.message ?? "Request failed");
+    throw new Error(errorBody.error ?? "Request failed");
   }
 
   return (await response.json()) as T;
@@ -54,8 +56,14 @@ export const api = {
       body: JSON.stringify({ playerName })
     });
   },
-  fetchRoom(code: string, participantId?: string) {
-    const query = participantId ? `?participantId=${encodeURIComponent(participantId)}` : "";
+  fetchRoom(code: string, playerName?: string) {
+    const query = playerName ? `?player=${encodeURIComponent(playerName)}` : "";
     return request<{ room: RoomSnapshot }>(`/rooms/${encodeURIComponent(code)}${query}`);
+  },
+  startGame(code: string, playerName: string) {
+    return request<{ room: RoomSnapshot }>(`/rooms/${encodeURIComponent(code)}/start`, {
+      method: "POST",
+      body: JSON.stringify({ playerName })
+    });
   }
 };

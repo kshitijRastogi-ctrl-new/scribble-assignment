@@ -4,6 +4,7 @@ import { CreateRoomPage } from "../pages/CreateRoomPage";
 import { GamePage } from "../pages/GamePage";
 import { JoinRoomPage } from "../pages/JoinRoomPage";
 import { LobbyPage } from "../pages/LobbyPage";
+import { ResultPage } from "../pages/ResultPage";
 import { StartPage } from "../pages/StartPage";
 
 export function AppRoutes() {
@@ -15,7 +16,8 @@ export function AppRoutes() {
           <Route path="/create-room" element={<CreateRoomPage />} />
           <Route path="/join-room" element={<JoinRoomPage />} />
           <Route path="/lobby" element={<LobbyPage />} />
-          <Route path="/game" element={<GamePage />} />
+          <Route path="/game/:code" element={<GamePage />} />
+          <Route path="/result" element={<ResultPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppShell>

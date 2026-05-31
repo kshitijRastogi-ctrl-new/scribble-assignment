@@ -4,17 +4,21 @@ import {
   HttpError,
   joinRoomSchema,
   roomCodeParamsSchema,
-  roomViewerQuerySchema
+  roomViewerQuerySchema,
+  startGameSchema
 } from "./schemas.js";
-import { createRoom, getRoom, joinRoom, toRoomSnapshot } from "../services/roomStore.js";
+import { createRoom, getRoom, joinRoom, startGame, toRoomSnapshot } from "../services/roomStore.js";
 
 export function createRoomsRouter() {
   const router = Router();
 
   router.post("/", (request, response, next) => {
     try {
-      const { playerName } = createRoomSchema.parse(request.body);
-      const result = createRoom(playerName);
+      const parsed = createRoomSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return next(new HttpError(400, parsed.error.issues[0]?.message ?? "Invalid request payload"));
+      }
+      const result = createRoom(parsed.data.playerName);
 
       response.status(201).json({
         participantId: result.participantId,
@@ -27,12 +31,29 @@ export function createRoomsRouter() {
 
   router.post("/:code/join", (request, response, next) => {
     try {
-      const { code } = roomCodeParamsSchema.parse(request.params);
-      const { playerName } = joinRoomSchema.parse(request.body);
-      const result = joinRoom(code.toUpperCase(), playerName);
+      const parsedCode = roomCodeParamsSchema.safeParse(request.params);
+      if (!parsedCode.success) {
+        return next(new HttpError(400, "Room code cannot be empty"));
+      }
 
-      if (!result) {
-        throw new HttpError(404, "Unable to join room");
+      const parsedBody = joinRoomSchema.safeParse(request.body);
+      if (!parsedBody.success) {
+        return next(new HttpError(400, parsedBody.error.issues[0]?.message ?? "Invalid request payload"));
+      }
+
+      const code = parsedCode.data.code.toUpperCase();
+      const { playerName } = parsedBody.data;
+
+      const result = joinRoom(code, playerName);
+
+      if (result === "emptyCode") {
+        return next(new HttpError(400, "Room code cannot be empty"));
+      }
+      if (result === "duplicateName") {
+        return next(new HttpError(409, "Name already taken in this room"));
+      }
+      if (result === null) {
+        return next(new HttpError(404, "Room not found"));
       }
 
       response.json({
@@ -47,16 +68,52 @@ export function createRoomsRouter() {
   router.get("/:code", (request, response, next) => {
     try {
       const { code } = roomCodeParamsSchema.parse(request.params);
-      const { participantId } = roomViewerQuerySchema.parse(request.query);
+      const { player } = roomViewerQuerySchema.parse(request.query);
       const room = getRoom(code.toUpperCase());
 
       if (!room) {
-        throw new HttpError(404, "Unable to load room");
+        throw new HttpError(404, "Room not found");
       }
 
       response.json({
-        room: toRoomSnapshot(room, participantId)
+        room: toRoomSnapshot(room, player)
       });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post("/:code/start", (request, response, next) => {
+    try {
+      const parsedCode = roomCodeParamsSchema.safeParse(request.params);
+      if (!parsedCode.success) {
+        return next(new HttpError(400, "Room code cannot be empty"));
+      }
+
+      const parsedBody = startGameSchema.safeParse(request.body);
+      if (!parsedBody.success) {
+        return next(new HttpError(400, parsedBody.error.issues[0]?.message ?? "Invalid request payload"));
+      }
+
+      const code = parsedCode.data.code.toUpperCase();
+      const { playerName } = parsedBody.data;
+
+      const result = startGame(code, playerName);
+
+      if (result === null) {
+        return next(new HttpError(404, "Room not found"));
+      }
+      if (result === "notHost") {
+        return next(new HttpError(403, "Only the host can start the game"));
+      }
+      if (result === "notEnoughPlayers") {
+        return next(new HttpError(400, "Need at least 2 players to start"));
+      }
+      if (result === "alreadyStarted") {
+        return next(new HttpError(400, "Game already started"));
+      }
+
+      response.json({ room: result });
     } catch (error) {
       next(error);
     }

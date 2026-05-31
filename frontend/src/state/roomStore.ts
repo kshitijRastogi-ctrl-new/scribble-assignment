@@ -80,12 +80,16 @@ class RoomStore {
   async createRoom(playerName: string) {
     const response = await this.withLoading(() => api.createRoom(playerName));
     this.setRoomSession(response);
+    localStorage.setItem("playerName", playerName);
+    localStorage.setItem("roomCode", response.room.code);
     return response;
   }
 
   async joinRoom(code: string, playerName: string) {
     const response = await this.withLoading(() => api.joinRoom(code, playerName));
     this.setRoomSession(response);
+    localStorage.setItem("playerName", playerName);
+    localStorage.setItem("roomCode", response.room.code);
     return response;
   }
 
@@ -94,9 +98,23 @@ class RoomStore {
       return null;
     }
 
-    const response = await api.fetchRoom(this.state.room.code, this.state.participantId ?? undefined);
+    const playerName = localStorage.getItem("playerName") ?? undefined;
+    const response = await api.fetchRoom(this.state.room.code, playerName);
     this.setRoomSnapshot(response.room);
     return response.room;
+  }
+
+  async fetchRoomByCode(code: string, playerName: string) {
+    const response = await api.fetchRoom(code, playerName);
+    this.setRoomSnapshot(response.room);
+    return response.room;
+  }
+
+  async startGame(playerName: string) {
+    await this.withLoading(async () => {
+      const response = await api.startGame(this.state.room!.code, playerName);
+      this.setRoomSnapshot(response.room);
+    });
   }
 }
 
