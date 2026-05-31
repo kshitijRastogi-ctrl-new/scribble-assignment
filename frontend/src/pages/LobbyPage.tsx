@@ -10,6 +10,8 @@ export function LobbyPage() {
   const roomStore = useRoomStore();
   const { room, error, isLoading } = useRoomState();
   const [refreshError, setRefreshError] = useState<string | null>(null);
+  const playerName = localStorage.getItem("playerName") ?? "";
+  const isHost = playerName === room?.host;
 
   useEffect(() => {
     if (!room) {
@@ -17,12 +19,33 @@ export function LobbyPage() {
     }
   }, [navigate, room]);
 
+  useEffect(() => {
+    if (!room?.code) return;
+    const id = setInterval(async () => {
+      const updated = await roomStore.fetchRoom();
+      if (updated?.status === "playing") {
+        navigate(`/game/${updated.code}`);
+      }
+    }, 2000);
+    return () => clearInterval(id);
+  }, [room?.code, roomStore, navigate]);
+
   async function handleRefresh() {
     try {
       setRefreshError(null);
       await roomStore.fetchRoom();
     } catch (caughtError) {
       setRefreshError(caughtError instanceof Error ? caughtError.message : "Unable to refresh room");
+    }
+  }
+
+  async function handleStart() {
+    try {
+      await roomStore.startGame(playerName);
+    } catch (err) {
+      setRefreshError(
+        err instanceof Error ? err.message : "Unable to start game"
+      );
     }
   }
 
@@ -50,6 +73,7 @@ export function LobbyPage() {
               {room.participants.map((participant) => (
                 <li key={participant.id}>
                   <span>{participant.name}</span>
+                  {participant.isHost ? <span> (Host)</span> : null}
                   <span className="player-list__meta">joined</span>
                 </li>
               ))}
@@ -69,9 +93,22 @@ export function LobbyPage() {
         <button className="button button--secondary" disabled={isLoading} onClick={handleRefresh}>
           {isLoading ? "Refreshing..." : "Refresh Room"}
         </button>
-        <button className="button button--primary" onClick={() => navigate("/game")}>
-          Start Game
-        </button>
+        {isHost ? (
+          <>
+            <button
+              className="button button--primary"
+              disabled={room.participants.length < 2}
+              onClick={handleStart}
+            >
+              Start Game
+            </button>
+            {room.participants.length < 2 && (
+              <p>Need at least 2 players to start</p>
+            )}
+          </>
+        ) : (
+          <p>Waiting for host to start…</p>
+        )}
       </div>
     </section>
   );

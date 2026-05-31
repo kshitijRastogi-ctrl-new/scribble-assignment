@@ -1,27 +1,14 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Card } from "../components/Card";
 import { GuessForm } from "../components/GuessForm";
 import { ResultPanel } from "../components/ResultPanel";
 import { RoomCodeBadge } from "../components/RoomCodeBadge";
 import { Scoreboard } from "../components/Scoreboard";
-import { useRoomState } from "../state/roomStore";
 
 export function GamePage() {
   const navigate = useNavigate();
-  const { room, participantId } = useRoomState();
-
-  useEffect(() => {
-    if (!room) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate, room]);
-
-  if (!room) {
-    return null;
-  }
-
-  const viewer = room.participants.find((participant) => participant.id === participantId) ?? null;
+  const { code } = useParams<{ code: string }>();
+  const playerName = localStorage.getItem("playerName");
 
   return (
     <section className="panel game-page">
@@ -30,7 +17,7 @@ export function GamePage() {
           <span className="section-kicker">Round 1</span>
           <h1 className="game-page__title">Guess the Word!</h1>
         </div>
-        <RoomCodeBadge code={room.code} />
+        <RoomCodeBadge code={code ?? ""} />
       </div>
 
       <div className="game-page__layout">
@@ -52,7 +39,7 @@ export function GamePage() {
             <dl className="detail-list">
               <div>
                 <dt>Name</dt>
-                <dd>{viewer?.name ?? "Unknown player"}</dd>
+                <dd>{playerName ?? "Unknown player"}</dd>
               </div>
               <div>
                 <dt>Status</dt>

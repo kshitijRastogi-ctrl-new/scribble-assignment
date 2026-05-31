@@ -74,9 +74,9 @@ description: "Task list for Room Setup & Lobby — Scenario 1"
 
 **Independent Test**: Create room (Alice), join room (Bob), call start as Alice → 200 `{ room: { status: "playing" } }`. Call start as Bob → 403. Call start with 1 player → 400.
 
-- [ ] T012 [US5] Add `startGame(code, playerName)` function to `backend/src/services/roomStore.ts` — return `null` if room not found; return string `"notHost"` if `playerName !== room.host`; return string `"notEnoughPlayers"` if `room.participants.length < 2`; otherwise set `room.status = "playing"`, call `saveRoom`, and return the updated `RoomSnapshot` via `toRoomSnapshot` — FR-011, FR-012 — depends: T007, T009
+- [x] T012 [US5] Add `startGame(code, playerName)` function to `backend/src/services/roomStore.ts` — return `null` if room not found; return string `"notHost"` if `playerName !== room.host`; return string `"notEnoughPlayers"` if `room.participants.length < 2`; otherwise set `room.status = "playing"`, call `saveRoom`, and return the updated `RoomSnapshot` via `toRoomSnapshot` — FR-011, FR-012 — depends: T007, T009
 
-- [ ] T013 [US5] Add `POST /rooms/:code/start` route handler to `backend/src/api/rooms.ts` — parse body with `startGameSchema`, call `startGame(code, playerName)`, map `null` → `HttpError(404, "Room not found")`, `"notHost"` → `HttpError(403, "Only the host can start the game")`, `"notEnoughPlayers"` → `HttpError(400, "Need at least 2 players to start")`; on success respond 200 `{ room }` — FR-011, FR-012 — depends: T003, T004, T012
+- [x] T013 [US5] Add `POST /rooms/:code/start` route handler to `backend/src/api/rooms.ts` — parse body with `startGameSchema`, call `startGame(code, playerName)`, map `null` → `HttpError(404, "Room not found")`, `"notHost"` → `HttpError(403, "Only the host can start the game")`, `"notEnoughPlayers"` → `HttpError(400, "Need at least 2 players to start")`; on success respond 200 `{ room }` — FR-011, FR-012 — depends: T003, T004, T012
 
 **Checkpoint**: Full start-game flow works via curl/Postman before touching the frontend.
 
@@ -86,13 +86,13 @@ description: "Task list for Room Setup & Lobby — Scenario 1"
 
 **Purpose**: Fix the starter URL bug, update shared types, wire error key. All frontend user story tasks depend on T014.
 
-- [ ] T014 Fix `frontend/src/services/api.ts` — (1) change fallback URL from `"http://localhost:3001/bug"` to `"http://localhost:3001"`; (2) add `isHost: boolean` and `score: number` to `Participant` interface; (3) add `host: string` to `RoomSnapshot` interface; (4) update `status` union from `"lobby"` to `"lobby" | "playing"`; (5) change error parsing from `errorBody.message` to `errorBody.error` — FR-002 — depends: T001
+- [x] T014 Fix `frontend/src/services/api.ts` — (1) change fallback URL from `"http://localhost:3001/bug"` to `"http://localhost:3001"`; (2) add `isHost: boolean` and `score: number` to `Participant` interface; (3) add `host: string` to `RoomSnapshot` interface; (4) update `status` union from `"lobby"` to `"lobby" | "playing"`; (5) change error parsing from `errorBody.message` to `errorBody.error` — FR-002 — depends: T001
 
-- [ ] T015 [P] [US5] Add `startGame(code, playerName)` method to `frontend/src/services/api.ts` — `POST /rooms/${code}/start` with body `{ playerName }`, return type `{ room: RoomSnapshot }` — FR-011 — depends: T014
+- [x] T015 [P] [US5] Add `startGame(code, playerName)` method to `frontend/src/services/api.ts` — `POST /rooms/${code}/start` with body `{ playerName }`, return type `{ room: RoomSnapshot }` — FR-011 — depends: T014
 
-- [ ] T016 [US1] Add localStorage writes to `frontend/src/state/roomStore.ts` — after `this.setRoomSession(response)` in both `createRoom` and `joinRoom` methods, call `localStorage.setItem("playerName", playerName)` and `localStorage.setItem("roomCode", response.room.code)` — FR-001 — depends: T014
+- [x] T016 [US1] Add localStorage writes to `frontend/src/state/roomStore.ts` — after `this.setRoomSession(response)` in both `createRoom` and `joinRoom` methods, call `localStorage.setItem("playerName", playerName)` and `localStorage.setItem("roomCode", response.room.code)` — FR-001 — depends: T014
 
-- [ ] T017 [P] [US5] Add `startGame(playerName)` method to `frontend/src/state/roomStore.ts` — call `api.startGame(this.state.room!.code, playerName)` inside `withLoading`, then call `this.setRoomSnapshot(response.room)` — FR-011 — depends: T015, T016
+- [x] T017 [P] [US5] Add `startGame(playerName)` method to `frontend/src/state/roomStore.ts` — call `api.startGame(this.state.room!.code, playerName)` inside `withLoading`, then call `this.setRoomSnapshot(response.room)` — FR-011 — depends: T015, T016
 
 **Checkpoint**: Frontend compiles with no type errors against updated backend types. API base URL resolves correctly.
 
@@ -104,9 +104,9 @@ description: "Task list for Room Setup & Lobby — Scenario 1"
 
 **Independent Test**: On Create Room form, submit blank name → inline "Name cannot be empty" error, no navigation. On Join Room form, submit blank code → inline error. Submit blank name → inline error.
 
-- [ ] T018 [US2] Update `frontend/src/pages/CreateRoomPage.tsx` — in `handleSubmit`, trim `playerName` before use; if trimmed value is empty, call `setError("Name cannot be empty")` and `return` without calling `roomStore.createRoom` — FR-003, FR-013 — depends: T016
+- [x] T018 [US2] Update `frontend/src/pages/CreateRoomPage.tsx` — in `handleSubmit`, trim `playerName` before use; if trimmed value is empty, call `setError("Name cannot be empty")` and `return` without calling `roomStore.createRoom` — FR-003, FR-013 — depends: T016
 
-- [ ] T019 [US3] Update `frontend/src/pages/JoinRoomPage.tsx` — in `handleSubmit`, trim both `playerName` and `roomCode`; guard: if trimmed name is empty → `setError("Name cannot be empty")` and return; if trimmed code is empty → `setError("Room code cannot be empty")` and return; pass trimmed values to `roomStore.joinRoom` — FR-003, FR-004, FR-013 — depends: T016
+- [x] T019 [US3] Update `frontend/src/pages/JoinRoomPage.tsx` — in `handleSubmit`, trim both `playerName` and `roomCode`; guard: if trimmed name is empty → `setError("Name cannot be empty")` and return; if trimmed code is empty → `setError("Room code cannot be empty")` and return; pass trimmed values to `roomStore.joinRoom` — FR-003, FR-004, FR-013 — depends: T016
 
 **Checkpoint**: Both forms show inline errors on empty submission with no navigation. Valid inputs still succeed.
 
@@ -118,9 +118,9 @@ description: "Task list for Room Setup & Lobby — Scenario 1"
 
 **Independent Test**: After navigating manually to `/game/ABCD`, the page renders without crashing and can read the room code from the URL.
 
-- [ ] T020 [US4] Update `frontend/src/routes/index.tsx` — change `<Route path="/game" element={<GamePage />} />` to `<Route path="/game/:code" element={<GamePage />} />` — FR-006 — depends: T014
+- [x] T020 [US4] Update `frontend/src/routes/index.tsx` — change `<Route path="/game" element={<GamePage />} />` to `<Route path="/game/:code" element={<GamePage />} />` — FR-006 — depends: T014
 
-- [ ] T021 [US4] Update `frontend/src/pages/GamePage.tsx` — add `const { code } = useParams<{ code: string }>()` and `const playerName = localStorage.getItem("playerName")`; remove the redirect guard that navigates away if `!room` (room store may be empty after page refresh; game screen hydration from route is a Scenario 3 concern); use `code` and `playerName` for display — FR-006 — depends: T020
+- [x] T021 [US4] Update `frontend/src/pages/GamePage.tsx` — add `const { code } = useParams<{ code: string }>()` and `const playerName = localStorage.getItem("playerName")`; remove the redirect guard that navigates away if `!room` (room store may be empty after page refresh; game screen hydration from route is a Scenario 3 concern); use `code` and `playerName` for display — FR-006 — depends: T020
 
 **Checkpoint**: Navigating to `/game/XXXX` renders the game screen without a crash or redirect.
 
@@ -132,7 +132,7 @@ description: "Task list for Room Setup & Lobby — Scenario 1"
 
 **Independent Test**: After creating a room, the lobby shows "(Host)" next to the creator's name. The second player who joins does not have the label.
 
-- [ ] T022 [US1] Update participant list in `frontend/src/pages/LobbyPage.tsx` — in the `map` over `room.participants`, add `{participant.isHost ? " (Host)" : ""}` as a `<span>` or inline text after the participant name — FR-008 — depends: T014
+- [x] T022 [US1] Update participant list in `frontend/src/pages/LobbyPage.tsx` — in the `map` over `room.participants`, add `{participant.isHost ? " (Host)" : ""}` as a `<span>` or inline text after the participant name — FR-008 — depends: T014
 
 **Checkpoint**: Creator sees "(Host)" next to their name. Second tab (joiner) sees no "(Host)" label on their own name.
 
@@ -144,11 +144,11 @@ description: "Task list for Room Setup & Lobby — Scenario 1"
 
 **Independent Test**: Open two tabs. Without clicking anything in tab 1, join in tab 2 → tab 1 participant list updates within 2 seconds. Host clicks Start → both tabs navigate to game screen within 2 seconds.
 
-- [ ] T023 [US4] Add localStorage read + `isHost` derivation to `frontend/src/pages/LobbyPage.tsx` — at component top, read `const playerName = localStorage.getItem("playerName") ?? ""`; derive `const isHost = playerName === room?.host` — FR-008, FR-009 — depends: T022
+- [x] T023 [US4] Add localStorage read + `isHost` derivation to `frontend/src/pages/LobbyPage.tsx` — at component top, read `const playerName = localStorage.getItem("playerName") ?? ""`; derive `const isHost = playerName === room?.host` — FR-008, FR-009 — depends: T022
 
-- [ ] T024 [US4] Add polling `useEffect` to `frontend/src/pages/LobbyPage.tsx` — `useEffect` depends on `[room?.code]`; inside, call `const id = setInterval(async () => { await roomStore.fetchRoom() }, 2000)`; return `() => clearInterval(id)` as cleanup — FR-005, FR-007 — depends: T023
+- [x] T024 [US4] Add polling `useEffect` to `frontend/src/pages/LobbyPage.tsx` — `useEffect` depends on `[room?.code]`; inside, call `const id = setInterval(async () => { await roomStore.fetchRoom() }, 2000)`; return `() => clearInterval(id)` as cleanup — FR-005, FR-007 — depends: T023
 
-- [ ] T025 [US4] Add status-check navigation to the poll callback in `frontend/src/pages/LobbyPage.tsx` — after `roomStore.fetchRoom()` resolves, read the updated room from `useRoomState()` (already subscribed); if `room?.status === "playing"` call `navigate(\`/game/${room.code}\`)` — FR-006 — depends: T024
+- [x] T025 [US4] Add status-check navigation to the poll callback in `frontend/src/pages/LobbyPage.tsx` — after `roomStore.fetchRoom()` resolves, read the updated room from `useRoomState()` (already subscribed); if `room?.status === "playing"` call `navigate(\`/game/${room.code}\`)` — FR-006 — depends: T024
 
 **Checkpoint**: SC-001 passes (second player appears within ~2s). Both tabs navigate to game screen after host starts.
 
@@ -160,11 +160,11 @@ description: "Task list for Room Setup & Lobby — Scenario 1"
 
 **Independent Test**: In host tab (1 player) — button present but disabled with message. After second player joins — button enabled. In non-host tab — button absent, waiting message shown. Host clicks Start — both tabs navigate to game within ~2s.
 
-- [ ] T026 [US5] Add host-only "Start Game" button to `frontend/src/pages/LobbyPage.tsx` — replace the existing unconditional "Start Game" button with: if `isHost`, render `<button disabled={room.participants.length < 2} onClick={handleStart}>Start Game</button>`; if `room.participants.length < 2`, also render `<p>Need at least 2 players to start</p>` below the button — FR-009, FR-010 — depends: T023
+- [x] T026 [US5] Add host-only "Start Game" button to `frontend/src/pages/LobbyPage.tsx` — replace the existing unconditional "Start Game" button with: if `isHost`, render `<button disabled={room.participants.length < 2} onClick={handleStart}>Start Game</button>`; if `room.participants.length < 2`, also render `<p>Need at least 2 players to start</p>` below the button — FR-009, FR-010 — depends: T023
 
-- [ ] T027 [US5] Add non-host waiting message to `frontend/src/pages/LobbyPage.tsx` — in the else branch (not `isHost`), render `<p>Waiting for host to start…</p>` in place of the Start Game button — FR-009 — depends: T026
+- [x] T027 [US5] Add non-host waiting message to `frontend/src/pages/LobbyPage.tsx` — in the else branch (not `isHost`), render `<p>Waiting for host to start…</p>` in place of the Start Game button — FR-009 — depends: T026
 
-- [ ] T028 [US5] Wire `handleStart` in `frontend/src/pages/LobbyPage.tsx` — add `async function handleStart() { try { await roomStore.startGame(playerName) } catch (err) { /* show inline error via setRefreshError */ } }`; room status transitions to `"playing"` which the existing poll (T025) will detect and navigate — FR-011, FR-012 — depends: T025, T026
+- [x] T028 [US5] Wire `handleStart` in `frontend/src/pages/LobbyPage.tsx` — add `async function handleStart() { try { await roomStore.startGame(playerName) } catch (err) { /* show inline error via setRefreshError */ } }`; room status transitions to `"playing"` which the existing poll (T025) will detect and navigate — FR-011, FR-012 — depends: T025, T026
 
 **Checkpoint**: SC-005 (Start Game inaccessible to non-hosts), SC-006 (both tabs navigate within one poll cycle after host starts).
 
@@ -174,9 +174,9 @@ description: "Task list for Room Setup & Lobby — Scenario 1"
 
 **Purpose**: End-to-end validation of all acceptance criteria across two browser tabs.
 
-- [ ] T029 Run backend (`npm run dev` in `backend/`) and frontend (`npm run dev` in `frontend/`), open two browser tabs, and manually validate all 6 success criteria from spec.md: SC-001 (2s poll), SC-002 (name errors), SC-003 (code errors), SC-004 (host label), SC-005 (start button gating), SC-006 (both tabs navigate on start) — depends: T028
+- [x] T029 Run backend (`npm run dev` in `backend/`) and frontend (`npm run dev` in `frontend/`), open two browser tabs, and manually validate all 6 success criteria from spec.md: SC-001 (2s poll), SC-002 (name errors), SC-003 (code errors), SC-004 (host label), SC-005 (start button gating), SC-006 (both tabs navigate on start) — depends: T028
 
-- [ ] T030 [P] Run `npm run build` in `backend/` and `npm run build` in `frontend/` to confirm TypeScript compiles with no errors after all changes — depends: T028
+- [x] T030 [P] Run `npm run build` in `backend/` and `npm run build` in `frontend/` to confirm TypeScript compiles with no errors after all changes — depends: T028
 
 ---
 

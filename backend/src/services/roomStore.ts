@@ -115,3 +115,24 @@ export function toRoomSnapshot(room: Room, viewerParticipantId?: string): RoomSn
     roles: [...STARTER_ROLES]
   };
 }
+
+export function startGame(code: string, playerName: string): null | "notHost" | "notEnoughPlayers" | RoomSnapshot {
+  const room = rooms.get(code);
+
+  if (!room) {
+    return null;
+  }
+
+  if (playerName !== room.host) {
+    return "notHost" as const;
+  }
+
+  if (room.participants.length < 2) {
+    return "notEnoughPlayers" as const;
+  }
+
+  room.status = "playing";
+  saveRoom(room);
+
+  return toRoomSnapshot(room);
+}
