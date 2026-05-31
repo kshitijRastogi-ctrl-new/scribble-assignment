@@ -30,12 +30,12 @@ export function errorHandler(
   _next: NextFunction
 ) {
   if (error.name === "ZodError") {
-    response.status(400).json({ message: "Invalid request payload" });
+    response.status(400).json({ error: "Invalid request payload" });
     return;
   }
 
   const statusCode = error.statusCode ?? 500;
   response.status(statusCode).json({
-    message: error.message || "Unexpected server error"
+    error: error.message || "Unexpected server error"
   });
 }

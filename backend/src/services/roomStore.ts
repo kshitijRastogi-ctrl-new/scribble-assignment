@@ -29,14 +29,12 @@ function generateUniqueCode() {
   return code;
 }
 
-function displayName(name?: string) {
-  return name || "Player";
-}
-
-function createParticipant(name?: string): Participant {
+function createParticipant(name: string, isHost: boolean): Participant {
   return {
     id: randomUUID(),
-    name: displayName(name),
+    name,
+    isHost,
+    score: 0,
     joinedAt: now()
   };
 }
@@ -49,10 +47,11 @@ export function listWords() {
   return [...STARTER_WORDS];
 }
 
-export function createRoom(playerName?: string) {
-  const participant = createParticipant(playerName);
+export function createRoom(playerName: string) {
+  const participant = createParticipant(playerName, true);
   const room: Room = {
     code: generateUniqueCode(),
+    host: playerName,
     status: "lobby",
     participants: [participant],
     createdAt: now(),
@@ -67,14 +66,22 @@ export function createRoom(playerName?: string) {
   };
 }
 
-export function joinRoom(code: string, playerName?: string) {
+export function joinRoom(code: string, playerName: string) {
+  if (code.trim() === "") {
+    return "emptyCode" as const;
+  }
+
   const room = rooms.get(code);
 
   if (!room) {
     return null;
   }
 
-  const participant = createParticipant(playerName);
+  if (room.participants.some((p) => p.name === playerName)) {
+    return "duplicateName" as const;
+  }
+
+  const participant = createParticipant(playerName, false);
   room.participants.push(participant);
   room.updatedAt = now();
   rooms.set(room.code, room);
@@ -101,9 +108,31 @@ export function toRoomSnapshot(room: Room, viewerParticipantId?: string): RoomSn
 
   return {
     code: room.code,
+    host: room.host,
     status: room.status,
     participants: room.participants.map((participant) => ({ ...participant })),
     availableWords: listWords(),
     roles: [...STARTER_ROLES]
   };
+}
+
+export function startGame(code: string, playerName: string): null | "notHost" | "notEnoughPlayers" | RoomSnapshot {
+  const room = rooms.get(code);
+
+  if (!room) {
+    return null;
+  }
+
+  if (playerName !== room.host) {
+    return "notHost" as const;
+  }
+
+  if (room.participants.length < 2) {
+    return "notEnoughPlayers" as const;
+  }
+
+  room.status = "playing";
+  saveRoom(room);
+
+  return toRoomSnapshot(room);
 }

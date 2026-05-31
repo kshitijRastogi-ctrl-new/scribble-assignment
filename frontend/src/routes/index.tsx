@@ -15,7 +15,7 @@ export function AppRoutes() {
           <Route path="/create-room" element={<CreateRoomPage />} />
           <Route path="/join-room" element={<JoinRoomPage />} />
           <Route path="/lobby" element={<LobbyPage />} />
-          <Route path="/game" element={<GamePage />} />
+          <Route path="/game/:code" element={<GamePage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppShell>
