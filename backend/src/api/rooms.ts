@@ -68,7 +68,7 @@ export function createRoomsRouter() {
   router.get("/:code", (request, response, next) => {
     try {
       const { code } = roomCodeParamsSchema.parse(request.params);
-      const { participantId } = roomViewerQuerySchema.parse(request.query);
+      const { player } = roomViewerQuerySchema.parse(request.query);
       const room = getRoom(code.toUpperCase());
 
       if (!room) {
@@ -76,7 +76,7 @@ export function createRoomsRouter() {
       }
 
       response.json({
-        room: toRoomSnapshot(room, participantId)
+        room: toRoomSnapshot(room, player)
       });
     } catch (error) {
       next(error);
@@ -108,6 +108,9 @@ export function createRoomsRouter() {
       }
       if (result === "notEnoughPlayers") {
         return next(new HttpError(400, "Need at least 2 players to start"));
+      }
+      if (result === "alreadyStarted") {
+        return next(new HttpError(400, "Game already started"));
       }
 
       response.json({ room: result });

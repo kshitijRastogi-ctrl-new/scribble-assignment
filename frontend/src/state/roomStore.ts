@@ -98,7 +98,14 @@ class RoomStore {
       return null;
     }
 
-    const response = await api.fetchRoom(this.state.room.code, this.state.participantId ?? undefined);
+    const playerName = localStorage.getItem("playerName") ?? undefined;
+    const response = await api.fetchRoom(this.state.room.code, playerName);
+    this.setRoomSnapshot(response.room);
+    return response.room;
+  }
+
+  async fetchRoomByCode(code: string, playerName: string) {
+    const response = await api.fetchRoom(code, playerName);
     this.setRoomSnapshot(response.room);
     return response.room;
   }

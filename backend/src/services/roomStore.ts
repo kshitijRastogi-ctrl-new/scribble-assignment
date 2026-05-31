@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { Participant, Room, RoomSnapshot } from "../models/game.js";
-import { STARTER_ROLES, STARTER_WORDS } from "../seed/starterData.js";
+import { STARTER_WORDS } from "../seed/starterData.js";
 
 const rooms = new Map<string, Room>();
 
@@ -35,7 +35,8 @@ function createParticipant(name: string, isHost: boolean): Participant {
     name,
     isHost,
     score: 0,
-    joinedAt: now()
+    joinedAt: now(),
+    role: ""
   };
 }
 
@@ -55,7 +56,9 @@ export function createRoom(playerName: string) {
     status: "lobby",
     participants: [participant],
     createdAt: now(),
-    updatedAt: now()
+    updatedAt: now(),
+    wordIndex: 0,
+    secretWord: ""
   };
 
   rooms.set(room.code, room);
@@ -103,8 +106,9 @@ export function saveRoom(room: Room) {
   return getRoom(room.code);
 }
 
-export function toRoomSnapshot(room: Room, viewerParticipantId?: string): RoomSnapshot {
-  void viewerParticipantId;
+export function toRoomSnapshot(room: Room, viewerName?: string): RoomSnapshot {
+  const isDrawer = !!viewerName &&
+    room.participants.some(p => p.name === viewerName && p.role === "drawer");
 
   return {
     code: room.code,
@@ -112,11 +116,11 @@ export function toRoomSnapshot(room: Room, viewerParticipantId?: string): RoomSn
     status: room.status,
     participants: room.participants.map((participant) => ({ ...participant })),
     availableWords: listWords(),
-    roles: [...STARTER_ROLES]
+    ...(isDrawer && room.status === "playing" ? { secretWord: room.secretWord } : {})
   };
 }
 
-export function startGame(code: string, playerName: string): null | "notHost" | "notEnoughPlayers" | RoomSnapshot {
+export function startGame(code: string, playerName: string): null | "notHost" | "notEnoughPlayers" | "alreadyStarted" | RoomSnapshot {
   const room = rooms.get(code);
 
   if (!room) {
@@ -131,7 +135,14 @@ export function startGame(code: string, playerName: string): null | "notHost" | 
     return "notEnoughPlayers" as const;
   }
 
+  if (room.status === "playing") {
+    return "alreadyStarted" as const;
+  }
+
   room.status = "playing";
+  room.participants.forEach(p => { p.role = p.isHost ? "drawer" : "guesser"; });
+  room.secretWord = STARTER_WORDS[room.wordIndex % STARTER_WORDS.length];
+  room.wordIndex += 1;
   saveRoom(room);
 
   return toRoomSnapshot(room);
