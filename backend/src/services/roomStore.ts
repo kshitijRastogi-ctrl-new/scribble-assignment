@@ -58,7 +58,9 @@ export function createRoom(playerName: string) {
     createdAt: now(),
     updatedAt: now(),
     wordIndex: 0,
-    secretWord: ""
+    secretWord: "",
+    canvasData: "",
+    guesses: []
   };
 
   rooms.set(room.code, room);
@@ -116,6 +118,8 @@ export function toRoomSnapshot(room: Room, viewerName?: string): RoomSnapshot {
     status: room.status,
     participants: room.participants.map((participant) => ({ ...participant })),
     availableWords: listWords(),
+    canvasData: room.canvasData,
+    guesses: room.guesses.map(g => ({ ...g })),
     ...(isDrawer && room.status === "playing" ? { secretWord: room.secretWord } : {})
   };
 }
@@ -145,5 +149,34 @@ export function startGame(code: string, playerName: string): null | "notHost" | 
   room.wordIndex += 1;
   saveRoom(room);
 
+  return toRoomSnapshot(room);
+}
+
+export function updateCanvas(code: string, canvasData: string): RoomSnapshot | null {
+  const room = rooms.get(code);
+  if (!room) return null;
+  room.canvasData = canvasData;
+  saveRoom(room);
+  return toRoomSnapshot(room);
+}
+
+export function submitGuess(
+  code: string,
+  playerName: string,
+  guess: string
+): RoomSnapshot | null | "roundOver" {
+  const room = rooms.get(code);
+  if (!room) return null;
+  if (room.status === "result") return "roundOver" as const;
+  const trimmed = guess.trim();
+  const isCorrect = trimmed.toLowerCase() === room.secretWord.toLowerCase();
+  if (isCorrect) {
+    const participant = room.participants.find(p => p.name === playerName);
+    if (participant) participant.score += 100;
+    room.status = "result";
+    // INVARIANT: do not clear guesses or canvasData — Scenario 4 result screen depends on both
+  }
+  room.guesses.push({ playerName, text: trimmed, isCorrect });
+  saveRoom(room);
   return toRoomSnapshot(room);
 }

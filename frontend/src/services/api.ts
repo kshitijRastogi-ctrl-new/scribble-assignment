@@ -13,12 +13,20 @@ export interface RoomSnapshot {
   status: "lobby" | "playing" | "result";
   participants: Participant[];
   availableWords: string[];
+  canvasData: string;
+  guesses: Guess[];
   secretWord?: string;
 }
 
 export interface RoomSessionResponse {
   participantId: string;
   room: RoomSnapshot;
+}
+
+export interface Guess {
+  playerName: string;
+  text:       string;
+  isCorrect:  boolean;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
@@ -64,6 +72,18 @@ export const api = {
     return request<{ room: RoomSnapshot }>(`/rooms/${encodeURIComponent(code)}/start`, {
       method: "POST",
       body: JSON.stringify({ playerName })
+    });
+  },
+  updateCanvas(code: string, canvasData: string) {
+    return request<{ ok: boolean }>(`/rooms/${encodeURIComponent(code)}/canvas`, {
+      method: "POST",
+      body: JSON.stringify({ canvasData })
+    });
+  },
+  submitGuess(code: string, playerName: string, guess: string) {
+    return request<{ room: RoomSnapshot }>(`/rooms/${encodeURIComponent(code)}/guess`, {
+      method: "POST",
+      body: JSON.stringify({ playerName, guess })
     });
   }
 };

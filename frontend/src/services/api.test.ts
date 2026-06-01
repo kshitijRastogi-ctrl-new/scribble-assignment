@@ -28,7 +28,7 @@ describe("api service", () => {
     );
   });
 
-  it("fetchRoom sends GET to /rooms/:code with participantId query param", async () => {
+  it("fetchRoom sends GET to /rooms/:code with player query param", async () => {
     const mockResponse = {
       ok: true,
       json: () =>
@@ -41,7 +41,7 @@ describe("api service", () => {
     await api.fetchRoom("XYZW", "p1");
 
     expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining("/rooms/XYZW?participantId=p1"),
+      expect.stringContaining("/rooms/XYZW?player=p1"),
       expect.anything()
     );
   });

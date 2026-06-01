@@ -6,6 +6,8 @@ import { ResultPanel } from "../components/ResultPanel";
 import { RoomCodeBadge } from "../components/RoomCodeBadge";
 import { Scoreboard } from "../components/Scoreboard";
 import { useRoomState, useRoomStore } from "../state/roomStore";
+import { api } from "../services/api";
+import { DrawingCanvas } from "../components/DrawingCanvas";
 
 export function GamePage() {
   const navigate = useNavigate();
@@ -42,6 +44,19 @@ export function GamePage() {
   const myRole = room?.participants.find(p => p.name === playerName)?.role ?? "";
   const drawerName = room?.participants.find(p => p.role === "drawer")?.name ?? "";
 
+  async function handleCanvasUpdate(dataUrl: string) {
+    if (!code) return;
+    api.updateCanvas(code, dataUrl).catch(err =>
+      setRefreshError(err instanceof Error ? err.message : "Canvas upload failed"));
+  }
+
+  async function handleGuessSubmit(guess: string) {
+    if (!code || !playerName) return;
+    const result = await api.submitGuess(code, playerName, guess);
+    roomStore.setRoomSnapshot(result.room);
+    if (result.room.status === "result") navigate("/result");
+  }
+
   return (
     <section className="panel game-page">
       <div className="game-page__header">
@@ -54,15 +69,17 @@ export function GamePage() {
 
       <div className="game-page__layout">
         <aside className="game-page__sidebar game-page__sidebar--left">
-          <Scoreboard />
-          <ResultPanel />
+          <Scoreboard participants={room?.participants ?? []} />
+          <ResultPanel guesses={room?.guesses ?? []} />
         </aside>
 
-        <div className="game-page__main">
+        <div className="game-page__main" style={{ minWidth: 0 }}>
           <Card title="Canvas">
-            <div className="canvas-placeholder" style={{ minHeight: '500px', backgroundColor: '#ffffff', border: '1px solid #e5e7eb' }}>
-              Waiting for drawer...
-            </div>
+            <DrawingCanvas
+              role={myRole}
+              canvasData={room?.canvasData ?? ""}
+              onStrokeEnd={handleCanvasUpdate}
+            />
           </Card>
         </div>
 
@@ -94,7 +111,7 @@ export function GamePage() {
 
           {myRole === "guesser" && (
             <Card title="Your Guess">
-              <GuessForm />
+              <GuessForm onSubmit={handleGuessSubmit} />
             </Card>
           )}
         </aside>

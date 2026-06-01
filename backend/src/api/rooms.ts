@@ -1,13 +1,15 @@
 import { Router } from "express";
 import {
+  canvasSchema,
   createRoomSchema,
+  guessSchema,
   HttpError,
   joinRoomSchema,
   roomCodeParamsSchema,
   roomViewerQuerySchema,
   startGameSchema
 } from "./schemas.js";
-import { createRoom, getRoom, joinRoom, startGame, toRoomSnapshot } from "../services/roomStore.js";
+import { createRoom, getRoom, joinRoom, startGame, submitGuess, toRoomSnapshot, updateCanvas } from "../services/roomStore.js";
 
 export function createRoomsRouter() {
   const router = Router();
@@ -111,6 +113,63 @@ export function createRoomsRouter() {
       }
       if (result === "alreadyStarted") {
         return next(new HttpError(400, "Game already started"));
+      }
+
+      response.json({ room: result });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post("/:code/canvas", (request, response, next) => {
+    try {
+      const parsedCode = roomCodeParamsSchema.safeParse(request.params);
+      if (!parsedCode.success) {
+        return next(new HttpError(400, "Room code cannot be empty"));
+      }
+
+      const parsedBody = canvasSchema.safeParse(request.body);
+      if (!parsedBody.success) {
+        return next(new HttpError(400, "Invalid canvas data"));
+      }
+
+      const code = parsedCode.data.code.toUpperCase();
+      const { canvasData } = parsedBody.data;
+
+      const result = updateCanvas(code, canvasData);
+
+      if (result === null) {
+        return next(new HttpError(404, "Room not found"));
+      }
+
+      response.json({ ok: true });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post("/:code/guess", (request, response, next) => {
+    try {
+      const parsedCode = roomCodeParamsSchema.safeParse(request.params);
+      if (!parsedCode.success) {
+        return next(new HttpError(400, "Room code cannot be empty"));
+      }
+
+      const parsedBody = guessSchema.safeParse(request.body);
+      if (!parsedBody.success) {
+        return next(new HttpError(400, parsedBody.error.issues[0]?.message ?? "Invalid request payload"));
+      }
+
+      const code = parsedCode.data.code.toUpperCase();
+      const { playerName, guess } = parsedBody.data;
+
+      const result = submitGuess(code, playerName, guess.trim());
+
+      if (result === null) {
+        return next(new HttpError(404, "Room not found"));
+      }
+      if (result === "roundOver") {
+        return next(new HttpError(400, "Round already over"));
       }
 
       response.json({ room: result });

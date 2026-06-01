@@ -98,8 +98,8 @@ every subsequent backend phase.
 
 **Goal**: TypeScript compile passes clean across both workspaces; all five success criteria verified with two browser tabs.
 
-- [ ] T019 [P] Run `npm run build` (or `npx tsc --noEmit`) in both `backend/` and `frontend/` — confirm 0 TypeScript errors across all changed files — depends: T008, T018
+- [x] T019 [P] Run `npm run build` (or `npx tsc --noEmit`) in both `backend/` and `frontend/` — confirm 0 TypeScript errors across all changed files — depends: T008, T018
 
-- [ ] T020 Manual two-tab end-to-end validation — Tab 1 (Alice, host/drawer): create room, verify lobby shows "(Host)" and "Start Game" button; add Bob in Tab 2; Alice clicks Start; verify Tab 1 shows "You are drawing!" + secret word + no guess form; verify Tab 2 shows "You are guessing!" + "Alice is drawing" + guess form; refresh Tab 1 (test FR-013 mount fetch); verify secret word reappears; confirm `GET /rooms/:code?player=Alice` in network tab includes `secretWord` and `GET /rooms/:code?player=Bob` does not — SC-001, SC-002, SC-003, SC-004, SC-005 — depends: T019
+- [x] T020 Manual two-tab end-to-end validation — Tab 1 (Alice, host/drawer): create room, verify lobby shows "(Host)" and "Start Game" button; add Bob in Tab 2; Alice clicks Start; verify Tab 1 shows "You are drawing!" + secret word + no guess form; verify Tab 2 shows "You are guessing!" + "Alice is drawing" + guess form; refresh Tab 1 (test FR-013 mount fetch); verify secret word reappears; confirm `GET /rooms/:code?player=Alice` in network tab includes `secretWord` and `GET /rooms/:code?player=Bob` does not — SC-001, SC-002, SC-003, SC-004, SC-005 — depends: T019
 
 **Checkpoint**: All five success criteria pass in two-tab manual test. `roles[]` is absent from all network responses. LobbyPage polling (Scenario 1) still works without regression.
