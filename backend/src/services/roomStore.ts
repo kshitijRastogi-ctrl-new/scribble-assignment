@@ -120,7 +120,9 @@ export function toRoomSnapshot(room: Room, viewerName?: string): RoomSnapshot {
     availableWords: listWords(),
     canvasData: room.canvasData,
     guesses: room.guesses.map(g => ({ ...g })),
-    ...(isDrawer && room.status === "playing" ? { secretWord: room.secretWord } : {})
+    ...((isDrawer && room.status === "playing") || room.status === "result"
+      ? { secretWord: room.secretWord }
+      : {})
   };
 }
 
@@ -177,6 +179,24 @@ export function submitGuess(
     // INVARIANT: do not clear guesses or canvasData — Scenario 4 result screen depends on both
   }
   room.guesses.push({ playerName, text: trimmed, isCorrect });
+  saveRoom(room);
+  return toRoomSnapshot(room);
+}
+
+export function restartRoom(
+  code: string,
+  playerName: string
+): RoomSnapshot | null | "notHost" | "roundNotOver" {
+  const room = rooms.get(code);
+  if (!room) return null;
+  if (playerName !== room.host) return "notHost" as const;
+  if (room.status !== "result") return "roundNotOver" as const;
+  room.status = "lobby";
+  room.participants.forEach(p => { p.score = 0; p.role = ""; });
+  room.canvasData = "";
+  room.guesses = [];
+  room.secretWord = "";
+  room.wordIndex += 1;
   saveRoom(room);
   return toRoomSnapshot(room);
 }
