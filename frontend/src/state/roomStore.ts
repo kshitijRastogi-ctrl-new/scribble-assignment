@@ -116,6 +116,13 @@ class RoomStore {
       this.setRoomSnapshot(response.room);
     });
   }
+
+  async restartRoom(playerName: string) {
+    await this.withLoading(async () => {
+      const response = await api.restartRoom(this.state.room!.code, playerName);
+      this.setRoomSnapshot(response.room);
+    });
+  }
 }
 
 const RoomStoreContext = createContext<RoomStore | null>(null);

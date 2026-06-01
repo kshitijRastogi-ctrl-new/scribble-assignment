@@ -5,11 +5,12 @@ import {
   guessSchema,
   HttpError,
   joinRoomSchema,
+  restartSchema,
   roomCodeParamsSchema,
   roomViewerQuerySchema,
   startGameSchema
 } from "./schemas.js";
-import { createRoom, getRoom, joinRoom, startGame, submitGuess, toRoomSnapshot, updateCanvas } from "../services/roomStore.js";
+import { createRoom, getRoom, joinRoom, restartRoom, startGame, submitGuess, toRoomSnapshot, updateCanvas } from "../services/roomStore.js";
 
 export function createRoomsRouter() {
   const router = Router();
@@ -170,6 +171,39 @@ export function createRoomsRouter() {
       }
       if (result === "roundOver") {
         return next(new HttpError(400, "Round already over"));
+      }
+
+      response.json({ room: result });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post("/:code/restart", (request, response, next) => {
+    try {
+      const parsedCode = roomCodeParamsSchema.safeParse(request.params);
+      if (!parsedCode.success) {
+        return next(new HttpError(400, "Room code cannot be empty"));
+      }
+
+      const parsedBody = restartSchema.safeParse(request.body);
+      if (!parsedBody.success) {
+        return next(new HttpError(400, parsedBody.error.issues[0]?.message ?? "Invalid request payload"));
+      }
+
+      const code = parsedCode.data.code.toUpperCase();
+      const { playerName } = parsedBody.data;
+
+      const result = restartRoom(code, playerName);
+
+      if (result === null) {
+        return next(new HttpError(404, "Room not found"));
+      }
+      if (result === "notHost") {
+        return next(new HttpError(403, "Only the host can restart"));
+      }
+      if (result === "roundNotOver") {
+        return next(new HttpError(400, "Round not over"));
       }
 
       response.json({ room: result });

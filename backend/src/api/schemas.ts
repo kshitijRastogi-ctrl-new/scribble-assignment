@@ -20,6 +20,10 @@ export const startGameSchema = z.object({
   playerName: z.string().trim().min(1, { message: "Name cannot be empty" })
 });
 
+export const restartSchema = z.object({
+  playerName: z.string().trim().min(1, { message: "Name cannot be empty" })
+});
+
 export const canvasSchema = z.object({
   canvasData: z.string()
 });
