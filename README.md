@@ -137,7 +137,7 @@ Use this to confirm the starter works from a clean clone:
 1. Start the backend and confirm `http://localhost:3001/health` returns `{ "ok": true }`.
 2. Start the frontend and open `http://localhost:5173`.
 3. Confirm the Start screen shows `Create Room` and `Join Room`.
-4. Create a room and confirm you land on the Lobby screen.
+4. Create a room and confirm you land on the Lobby screen. Use **Copy** next to the room code to copy it; the button briefly shows **Copied!**. Clipboard access requires a supported browser and secure context (such as localhost or HTTPS); if copying fails, select the code manually.
 5. Open another tab, join the same room, and use the Lobby refresh button to load the latest participant list.
 6. Open the Game screen and confirm the canvas, guess input, scoreboard, and result areas are placeholders only.
 7. Treat any start-page marketing copy as presentational only; use this README for actual supported scope.
