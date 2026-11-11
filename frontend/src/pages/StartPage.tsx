@@ -22,19 +22,24 @@ export function StartPage() {
         </div>
       </div>
 
-      <div className="hero__grid" style={{ marginTop: '16px' }}>
-        <Card title="Draw" badge="Step 1">
-          <p>Get a word and sketch it out on the canvas. No artistic skills required!</p>
-        </Card>
+      <section aria-labelledby="how-to-play">
+        <div className="page-header">
+          <h2 id="how-to-play">How to play</h2>
+        </div>
+        <div className="hero__grid" style={{ marginTop: '16px' }}>
+          <Card title="Draw" badge="Step 1">
+            <p>Get a word and sketch it out on the canvas. No artistic skills required!</p>
+          </Card>
 
-        <Card title="Guess" badge="Step 2">
-          <p>Type your guesses as fast as you can when other players are drawing.</p>
-        </Card>
+          <Card title="Guess" badge="Step 2">
+            <p>Type your guesses as fast as you can when other players are drawing.</p>
+          </Card>
 
-        <Card title="Win" badge="Step 3">
-          <p>Score the most points across all rounds to be crowned the winner.</p>
-        </Card>
-      </div>
+          <Card title="Win" badge="Step 3">
+            <p>Score the most points across all rounds to be crowned the winner.</p>
+          </Card>
+        </div>
+      </section>
     </section>
   );
 }
