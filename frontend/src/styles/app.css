@@ -251,7 +251,8 @@ input {
   padding-top: 16px;
 }
 
-.card h2 {
+.card h2,
+.hero__heading {
   margin: 0;
   color: var(--ink);
   font-size: 1.25rem;
