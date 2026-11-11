@@ -96,6 +96,19 @@ input {
   text-transform: uppercase;
 }
 
+.room-code-badge__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.room-code-badge__copy.button {
+  width: auto;
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 0.875rem;
+}
+
 .room-code-badge__code {
   color: var(--ink);
   font-size: 1.75rem;

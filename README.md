@@ -130,6 +130,11 @@ The frontend runs on `http://localhost:5173`.
 
 If needed, point the frontend at a different backend with `VITE_API_URL`.
 
+In the lobby, use **Copy** beside the room code to copy it for sharing. The
+button briefly shows **Copied!** after a successful copy. Clipboard access
+requires a supported browser and a secure context (HTTPS or localhost); if it
+is unavailable or denied, copy the displayed code manually.
+
 ## Quick Verification
 
 Use this to confirm the starter works from a clean clone:
