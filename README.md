@@ -138,9 +138,10 @@ Use this to confirm the starter works from a clean clone:
 2. Start the frontend and open `http://localhost:5173`.
 3. Confirm the Start screen shows `Create Room` and `Join Room`.
 4. Create a room and confirm you land on the Lobby screen.
-5. Open another tab, join the same room, and use the Lobby refresh button to load the latest participant list.
-6. Open the Game screen and confirm the canvas, guess input, scoreboard, and result areas are placeholders only.
-7. Treat any start-page marketing copy as presentational only; use this README for actual supported scope.
+5. In the Lobby, click **Copy code** beside the room code and paste it to share it. The button shows **Copied** for about two seconds after a successful copy. Clipboard access requires a secure context (HTTPS or localhost) and browser permission; if copying fails, select and copy the displayed code manually.
+6. Open another tab, join the same room, and use the Lobby refresh button to load the latest participant list.
+7. Open the Game screen and confirm the canvas, guess input, scoreboard, and result areas are placeholders only.
+8. Treat any start-page marketing copy as presentational only; use this README for actual supported scope.
 
 ## Recommended Build Order
 
