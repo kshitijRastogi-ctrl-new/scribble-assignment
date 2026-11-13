@@ -14,3 +14,6 @@ precheck-results/
 
 .vscode/
 .vite/
+.cache/
+test-results/
+playwright-report/
