@@ -18,7 +18,7 @@ test.describe("Lobby", () => {
       await page.getByRole("link", { name: "Create Room" }).click();
     });
     await test.step("Create a room as a new player", async () => {
-      await page.getByPlaceholder("Sketch captain").fill(`Captain ${Date.now()}`);
+      await page.getByPlaceholder("Sketch captain").fill(`C${Date.now()}`);
       await page.getByRole("button", { name: "Create and Continue" }).click();
     });
     await test.step("Land in the lobby", async () => {
