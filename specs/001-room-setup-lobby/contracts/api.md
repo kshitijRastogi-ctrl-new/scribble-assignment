@@ -18,7 +18,7 @@ Creates a new room. Creator is automatically the host.
 { "playerName": "Alice" }
 ```
 
-- `playerName` — required string; trimmed server-side; rejected if empty after trim.
+- `playerName` — required string; trimmed server-side; 1–20 UTF-16 code units after trimming.
 
 ### Response 201 — Success
 
@@ -44,6 +44,12 @@ Creates a new room. Creator is automatically the host.
 { "error": "Name cannot be empty" }
 ```
 
+### Response 400 — Name too long
+
+```json
+{ "error": "Name must be 20 characters or fewer" }
+```
+
 ---
 
 ## POST /rooms/:code/join (updated)
@@ -56,7 +62,7 @@ Joins an existing room by code.
 { "playerName": "Bob" }
 ```
 
-- `playerName` — required string; trimmed server-side; rejected if empty after trim.
+- `playerName` — required string; trimmed server-side; 1–20 UTF-16 code units after trimming.
 - `:code` — path param; trimmed and uppercased server-side before lookup.
 
 ### Response 200 — Success
@@ -82,6 +88,12 @@ Joins an existing room by code.
 
 ```json
 { "error": "Name cannot be empty" }
+```
+
+### Response 400 — Name too long
+
+```json
+{ "error": "Name must be 20 characters or fewer" }
 ```
 
 ### Response 400 — Empty code

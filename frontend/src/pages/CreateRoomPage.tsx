@@ -18,6 +18,11 @@ export function CreateRoomPage() {
       return;
     }
 
+    if (trimmedName.length > 20) {
+      setError("Name must be 20 characters or fewer");
+      return;
+    }
+
     try {
       setError(null);
       await roomStore.createRoom(trimmedName);

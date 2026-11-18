@@ -106,6 +106,8 @@ Backend endpoints currently available:
 - `POST /rooms/:code/join`
 - `GET /rooms/:code`
 
+For room creation and joining, player names are trimmed and must contain 1–20 UTF-16 code units (JavaScript string length). Empty names return `Name cannot be empty`; longer names return `Name must be 20 characters or fewer` with HTTP 400. The forms enforce the same limit before sending a request.
+
 The backend stores all room data in memory only. Restarting the backend clears all rooms.
 
 ## Run The Backend

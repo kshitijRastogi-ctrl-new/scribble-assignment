@@ -20,6 +20,10 @@ export function JoinRoomPage() {
       setError("Name cannot be empty");
       return;
     }
+    if (trimmedName.length > 20) {
+      setError("Name must be 20 characters or fewer");
+      return;
+    }
     if (!trimmedCode) {
       setError("Room code cannot be empty");
       return;
