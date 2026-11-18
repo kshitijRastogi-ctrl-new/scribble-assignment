@@ -218,6 +218,13 @@ input {
   grid-template-columns: minmax(0, 1fr);
 }
 
+.rules-list {
+  margin: 0;
+  padding-left: 1.5em;
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+}
+
 /* Individual Card Styling */
 .card {
   display: flex;

@@ -35,6 +35,14 @@ export function StartPage() {
           <p>Score the most points across all rounds to be crowned the winner.</p>
         </Card>
       </div>
+
+      <Card title="Rules">
+        <ol className="rules-list">
+          <li>The drawer gets a word and sketches it.</li>
+          <li>The other players type their guesses.</li>
+          <li>The highest score after all rounds wins.</li>
+        </ol>
+      </Card>
     </section>
   );
 }
